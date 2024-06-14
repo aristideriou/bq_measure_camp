@@ -1,20 +1,26 @@
 ## 1 - Metric designer
 
 ## Basic count
+```sql
 SELECT
   count(*) as total_hits
 FROM
   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+```
 
 ## Basic count on filtered event name
+```sql
+
 SELECT
   count(*) as total_purchase
 FROM
   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE
   event_name = 'purchase'
+```
 
 ## Basic count on filtered event name + filtered event_params
+```sql
 SELECT
   COUNT(*) as hits
 FROM
@@ -22,8 +28,10 @@ FROM
 WHERE
   event_name = 'add_to_cart'
   AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'page_location') = 'https://shop.googlemerchandisestore.com/Google+Redesign/Apparel'
+```
 
 ## Count on user_pseudo_id on filtered event name + filtered event_params
+```sql
 SELECT
   COUNT(DISTINCT(user_pseudo_id)) as users
 FROM
@@ -31,8 +39,10 @@ FROM
 WHERE
   event_name = 'add_to_cart'
   AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'page_location') = 'https://shop.googlemerchandisestore.com/Google+Redesign/Apparel'
+```
 
 ## Count on session_id on filtered event name + filtered event_params
+```sql
 SELECT
   COUNT(DISTINCT(CONCAT((SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id'),user_pseudo_id))) as sessions
 FROM
@@ -40,26 +50,32 @@ FROM
 WHERE
   event_name = 'add_to_cart'
   AND (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'page_location') = 'https://shop.googlemerchandisestore.com/Google+Redesign/Apparel'
+```
 
 ## Calculation on a param - Mean
+```sql
 SELECT
   AVG((SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'value')) AS mean
 FROM
   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE
   event_name = 'purchase'
+```
 
 ## Calculation on a param - Quartiles
+```sql
 SELECT
   APPROX_QUANTILES((SELECT value.double_value FROM UNNEST(event_params) WHERE key = 'value'),4) AS quartiles
 FROM
   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 WHERE
   event_name = 'purchase'
+```
 
 ## 2 - Dimension designer
 
 ## Basic BQ field selection
+```sql
 SELECT
   event_name,
   count(*) as hits
@@ -67,8 +83,10 @@ FROM
   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 GROUP BY event_name
 ORDER BY hits desc
+```
 
 ## BQ field with lookup table
+```sql
 SELECT
   CASE  
     WHEN event_name IN ('view_item','view_promotion','add_to_cart','begin_checkout','select_item') THEN 'E-commerce'
@@ -81,10 +99,12 @@ FROM
   `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
 GROUP BY event_name_reclassified
 ORDER BY hits desc
+```
 
 ## 3 - Report Builder
 
 ## Basic combination of 1 and 2
+```
 WITH p1 as(
 SELECT
   (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'promotion_name') as promotion_name,
@@ -113,12 +133,14 @@ SELECT
 FROM p2
 WHERE count_of_transactions > 500
 LIMIT 2
+```
 
 ## Ajout de fields - A revoir selon temps...
 
 ## 4 - Result screen
 
 ## Basic query 2 metrics
+```
 SELECT
   device.web_info.browser,
   geo.country,
@@ -143,10 +165,12 @@ SELECT
   *,
   p1.events / p1.sessions as events_per_sessions
 FROM p1
+```
 
 ## 3.5 Segments logic
 
 ## Session segment
+```sql
 WITH P1 as(
 SELECT
   (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id') as session_id,
@@ -171,8 +195,10 @@ FROM
 WHERE
   p2.session_id is not null
 GROUP BY all
+```
 
 ## User segment 
+```sql
 WITH P1 as(
 SELECT
   user_pseudo_id
@@ -197,8 +223,10 @@ FROM
 WHERE
   p2.user_pseudo_id is not null
 GROUP BY all
+```
 
 ## 4 - Realtime report builder
+```sql
 SELECT 
   (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'page_location') as page,
   COUNT(CASE 
@@ -220,8 +248,10 @@ WHERE
 GROUP BY page
 ORDER BY pv_last_5_minutes DESC
 LIMIT 10
+```
 
 ## 5 - Time calculator
+```sql
 WITH p1 as(
 SELECT
   user_pseudo_id,
@@ -246,8 +276,10 @@ SELECT
 FROM p2
 GROUP BY all
 ORDER by avg_time_spent desc
+```
 
 ## 6 - Distribution analysis
+```sql
 with p1 as(
 select 
   user_pseudo_id,
@@ -283,8 +315,10 @@ select
 from p3
 group by session_bucket
 order by nb_hits desc
+```
 
 ## 7 - Value analysis
+```sql
 WITH P1 AS(
 SELECT
   user_pseudo_id,
@@ -337,3 +371,4 @@ FROM
   p5
 GROUP BY page
 ORDER BY weight desc
+```
