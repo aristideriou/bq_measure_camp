@@ -135,8 +135,6 @@ WHERE count_of_transactions > 500
 LIMIT 2
 ```
 
-## Ajout de fields - A revoir selon temps...
-
 ## 4 - Result screen
 
 ## Basic query 2 metrics
