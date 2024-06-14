@@ -104,7 +104,7 @@ ORDER BY hits desc
 ## 3 - Report Builder
 
 ## Basic combination of 1 and 2
-```
+```sql
 WITH p1 as(
 SELECT
   (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'promotion_name') as promotion_name,
@@ -140,7 +140,7 @@ LIMIT 2
 ## 4 - Result screen
 
 ## Basic query 2 metrics
-```
+```sql
 SELECT
   device.web_info.browser,
   geo.country,
